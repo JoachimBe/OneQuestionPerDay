@@ -20,19 +20,31 @@ fn main() -> io::Result<()> {
     //let mut arc_is_pressed= Arc::new(Mutex::new(false));
     let mut is_pressed = false;
 
-    while is_pressed!=true{
-        
-        vec_of_bytes.push(generate_random_number_in_thread(time_in_millis));
+    loop{
+            vec_of_bytes.push(generate_random_number_in_thread(time_in_millis));
+            //thread::sleep(time::Duration::from_millis(500));
+            
+            if event::poll(Duration::from_millis(100)).unwrap() {
+                if let Event::Key(key_event) = event::read().unwrap() {
+                    match key_event {
+                        key_event_kind =>{
+                            if key_event_kind.is_release()==true{
+                                continue;
+                            }else{
+                                println!("key {key_event_kind:?}");
+                                break;
+                            }
+                        },
+                    }
+                    println!("Touche détectée ! Fin du programme.");
+                    break;
+                }
+            }
+            
+            
+            
+        };
         println!("test {vec_of_bytes:?}");
-        //thread::sleep(time::Duration::from_millis(500));
-
-        is_pressed = listen_to_key_stroke_async()
-        //is_pressed = listen_to_key_stroke_cross();
-       
-       //is_pressed = listen_to_key_stroke(vec_of_bytes.clone());
-       
-       
-    };
     Ok(())
 }
 
@@ -56,20 +68,22 @@ fn generate_random_number_in_thread(time_in_millis: time::Duration) -> u8{
 
 fn listen_to_key_stroke_async()-> bool{
     trpl::block_on( async {
-            let (tx, mut rx): (trpl::Sender<bool>, trpl::Receiver<bool>) = trpl::channel();
+        let (tx, mut rx): (trpl::Sender<bool>, trpl::Receiver<bool>) = trpl::channel();
             //let tx_fut= tx.clone();
-            trpl::spawn_task(async move {
-             if let  Event::Key(key_event) = event::read().expect("failed to read event"){//read is blocking
+        trpl::spawn_task(async move {
+            if event::poll(Duration::from_millis(100)).unwrap(){
+                if let  Event::Key(key_event) = event::read().expect("failed to read event"){
                     match key_event {
                         key_event_kind =>
-                            {
-                                if key_event_kind.is_release()==true{tx.send(false).unwrap()}else{tx.send(true).unwrap();println!("key {key_event_kind:?}");}
-                            },
+                        {
+                            if key_event_kind.is_release()==true{tx.send(false).unwrap()}else{tx.send(true).unwrap();println!("key {key_event_kind:?}");}
+                        },
                         _ =>  tx.send(false).unwrap()
-                        }
+                    }
                 }else{
                     tx.send(false).unwrap()
                 }
+            }
             });  
             println!("just before await");
             let is_pressed: bool = match rx.recv().await{
@@ -84,14 +98,22 @@ fn listen_to_key_stroke_async()-> bool{
 
  fn listen_to_key_stroke_cross() -> bool {
          thread::spawn( move || {
-            
-           if let  Event::Key(key_event) = event::read().expect("failed to read event"){
-                match key_event {
-                    key_event_kind =>{
-                        if key_event_kind.is_release()==true{}else{println!("key {key_event_kind:?}");}},
-                }
-            } 
+            if event::poll(Duration::from_millis(100)).unwrap(){
+                if let  Event::Key(key_event) = event::read().expect("failed to read event"){
+                    match key_event {
+                        key_event_kind =>{
+                            if key_event_kind.is_release()==true{
+                                false;
+                            }else{
+                                println!("key {key_event_kind:?}");
+                                true;
+                            }
+                        },
+                    }
+                } 
+            }
         }); 
+        
         false
         //poll(Duration::from_secs(0))
             
