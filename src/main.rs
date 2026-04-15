@@ -1,3 +1,4 @@
+#![allow(warnings)]
 use std::time::Duration;
 use std::{thread, time};
 use std::io::{Write, stdout};
@@ -5,6 +6,7 @@ use std::io;
 use std::sync::{mpsc, Arc, Mutex};
 
 use std::future::Future;
+
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind, poll};
 //use raw_input::{Core,Event,Key, Listen};
@@ -23,7 +25,9 @@ fn main() -> io::Result<()> {
         vec_of_bytes.push(generate_random_number_in_thread(time_in_millis));
         println!("test {vec_of_bytes:?}");
         //thread::sleep(time::Duration::from_millis(500));
-        is_pressed = listen_to_key_stroke_cross();
+
+        is_pressed = listen_to_key_stroke_async()
+        //is_pressed = listen_to_key_stroke_cross();
        
        //is_pressed = listen_to_key_stroke(vec_of_bytes.clone());
        
@@ -32,9 +36,10 @@ fn main() -> io::Result<()> {
     Ok(())
 }
 
+
 fn generate_random_number_in_thread(time_in_millis: time::Duration) -> u8{
 
-            let (tx, rx) = mpsc::channel::<u8>();
+        let (tx, rx) = mpsc::channel::<u8>();
 
 
         thread::spawn(move || {
@@ -47,6 +52,34 @@ fn generate_random_number_in_thread(time_in_millis: time::Duration) -> u8{
         thread::sleep(time_in_millis);
         let received = rx.recv().unwrap();
         received
+}
+
+fn listen_to_key_stroke_async()-> bool{
+    trpl::block_on( async {
+            let (tx, mut rx): (trpl::Sender<bool>, trpl::Receiver<bool>) = trpl::channel();
+            //let tx_fut= tx.clone();
+            trpl::spawn_task(async move {
+             if let  Event::Key(key_event) = event::read().expect("failed to read event"){//read is blocking
+                    match key_event {
+                        key_event_kind =>
+                            {
+                                if key_event_kind.is_release()==true{tx.send(false).unwrap()}else{tx.send(true).unwrap();println!("key {key_event_kind:?}");}
+                            },
+                        _ =>  tx.send(false).unwrap()
+                        }
+                }else{
+                    tx.send(false).unwrap()
+                }
+            });  
+            println!("just before await");
+            let is_pressed: bool = match rx.recv().await{
+                Some(value) => value,
+                None => false,
+            };
+            println!("just after await");
+            
+            is_pressed 
+        })
 }
 
  fn listen_to_key_stroke_cross() -> bool {
