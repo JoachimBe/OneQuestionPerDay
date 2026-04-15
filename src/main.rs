@@ -11,25 +11,22 @@ fn main() -> io::Result<()> {
     
     let time_in_millis = time::Duration::from_millis(50); 
     loop{
-    let mut vec_of_bytes: Vec<u8> = vec![];
-        println!("numbers are generated please press a key to stop");
-    loop{
-        vec_of_bytes.push(generate_random_number_in_thread(time_in_millis));
-        
-        if event::poll(Duration::from_millis(100)).unwrap() {
-                if let Event::Key(key_event) = event::read().unwrap() {
-                    match key_event {
-                        key_event_kind =>{
-                            if key_event_kind.is_release()==true{
-                                continue;
-                            }else{
-                                break;
-                            }
-                        },
-                    }
+        let mut vec_of_bytes: Vec<u8> = vec![];
+            println!("numbers are generated please press a key to show the range");
+
+        loop{
+            vec_of_bytes.push(generate_random_number_in_thread(time_in_millis));
+            
+            //event  poll permet d'attendre un evenement sans bloquer le thread 
+            if event::poll(Duration::from_millis(100)).unwrap() {
+                if let Event::Key(key_event_kind) = event::read().unwrap() {// si l'event est lu correctement on effectue le block
+                    if key_event_kind.is_release()==true{
+                        continue;
+                    }else{
+                        break;
+                    }                    
                 }
             }
-    
         };
         println!(" {vec_of_bytes:?}");
     }
