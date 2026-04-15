@@ -1,51 +1,38 @@
-#![allow(warnings)]
+
 use std::time::Duration;
 use std::{thread, time};
-use std::io::{Write, stdout};
 use std::io;
-use std::sync::{mpsc, Arc, Mutex};
-
-use std::future::Future;
-
+use std::sync::{mpsc};
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind, poll};
-//use raw_input::{Core,Event,Key, Listen};
 use rand::RngExt;
 
 fn main() -> io::Result<()> {
     
     let time_in_millis = time::Duration::from_millis(50); 
-    let mut vec_of_bytes: Vec<u8> = vec![];
-    //let new_event = Event{KeyDown{key: }};
-    //let mut arc_is_pressed= Arc::new(Mutex::new(false));
-    let mut is_pressed = false;
-
     loop{
-            vec_of_bytes.push(generate_random_number_in_thread(time_in_millis));
-            //thread::sleep(time::Duration::from_millis(500));
-            
-            if event::poll(Duration::from_millis(100)).unwrap() {
+    let mut vec_of_bytes: Vec<u8> = vec![];
+        println!("numbers are generated please press a key to stop");
+    loop{
+        vec_of_bytes.push(generate_random_number_in_thread(time_in_millis));
+        
+        if event::poll(Duration::from_millis(100)).unwrap() {
                 if let Event::Key(key_event) = event::read().unwrap() {
                     match key_event {
                         key_event_kind =>{
                             if key_event_kind.is_release()==true{
                                 continue;
                             }else{
-                                println!("key {key_event_kind:?}");
                                 break;
                             }
                         },
                     }
-                    println!("Touche détectée ! Fin du programme.");
-                    break;
                 }
             }
-            
-            
-            
+    
         };
-        println!("test {vec_of_bytes:?}");
-    Ok(())
+        println!(" {vec_of_bytes:?}");
+    }
 }
 
 
@@ -65,77 +52,3 @@ fn generate_random_number_in_thread(time_in_millis: time::Duration) -> u8{
         let received = rx.recv().unwrap();
         received
 }
-
-fn listen_to_key_stroke_async()-> bool{
-    trpl::block_on( async {
-        let (tx, mut rx): (trpl::Sender<bool>, trpl::Receiver<bool>) = trpl::channel();
-            //let tx_fut= tx.clone();
-        trpl::spawn_task(async move {
-            if event::poll(Duration::from_millis(100)).unwrap(){
-                if let  Event::Key(key_event) = event::read().expect("failed to read event"){
-                    match key_event {
-                        key_event_kind =>
-                        {
-                            if key_event_kind.is_release()==true{tx.send(false).unwrap()}else{tx.send(true).unwrap();println!("key {key_event_kind:?}");}
-                        },
-                        _ =>  tx.send(false).unwrap()
-                    }
-                }else{
-                    tx.send(false).unwrap()
-                }
-            }
-            });  
-            println!("just before await");
-            let is_pressed: bool = match rx.recv().await{
-                Some(value) => value,
-                None => false,
-            };
-            println!("just after await");
-            
-            is_pressed 
-        })
-}
-
- fn listen_to_key_stroke_cross() -> bool {
-         thread::spawn( move || {
-            if event::poll(Duration::from_millis(100)).unwrap(){
-                if let  Event::Key(key_event) = event::read().expect("failed to read event"){
-                    match key_event {
-                        key_event_kind =>{
-                            if key_event_kind.is_release()==true{
-                                false;
-                            }else{
-                                println!("key {key_event_kind:?}");
-                                true;
-                            }
-                        },
-                    }
-                } 
-            }
-        }); 
-        
-        false
-        //poll(Duration::from_secs(0))
-            
-}
-
-/*fn listen_to_key_stroke(mut vec_of_bytes: Vec<u8>) -> bool{
-        
-        let (tx, rx) = mpsc::channel::<bool>();
-        thread::spawn(|| {
-            Core::start().expect("Failed to start raw-input core");
-        });
-        let new_vec  =vec_of_bytes.clone();
-        Listen::start();
-        Listen::subscribe( move|event| {
-            match event {
-                Event::KeyDown { key } => {tx.send(true).expect("sender keydown failed") ; println!("key: {key:?} vec {:?}", new_vec); },
-                _ => {},
-            }
-        });
-        
-        let received:bool = rx.recv().expect("receiver failed");
-        Listen::stop(); // Stop Listen
-        Core::stop();
-    received
-}*/
