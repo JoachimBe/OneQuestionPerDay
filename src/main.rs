@@ -11,20 +11,20 @@ use crossterm::event::{self, Event, KeyCode, KeyEventKind, poll};
 use rand::RngExt;
 
 fn main() {
-    loop{
+    thread::spawn(||{
+        gen_array();
+    });
 
-        
-        let fut_listen = listen_udp_port_3615();
-        fut_listen
-    }
+        listen_udp_port_3615();
+
 }
 
  fn listen_udp_port_3615(){
 
-    
         let socket = UdpSocket::bind("127.0.0.1:3615").expect("failed to create socket, couldn't bind to address");
         let mut listen_buffer:[u8;200]= [0;200];
 
+        
         let (number_of_bytes, src_addr) = socket.recv_from(&mut listen_buffer).expect("couldn't write on the buffer");
         
         let filled_buffer =&mut listen_buffer[..number_of_bytes];
@@ -34,10 +34,9 @@ fn main() {
 
 
 
-fn gen_array() -> io::Result<()> {
-    
+fn gen_array() {
+    let sender_socket = UdpSocket::bind("127.0.0.1:30615").expect("Couldn't bind to address");
     let time_in_millis = time::Duration::from_millis(50); 
-    loop{
         let mut vec_of_bytes: Vec<u8> = vec![];
             println!("numbers are generated please press a key to show the range");
 
@@ -58,9 +57,10 @@ fn gen_array() -> io::Result<()> {
         for byte in &vec_of_bytes{
             print!("{byte} ");
         }
+        sender_socket.send_to(&vec_of_bytes, "127.0.0.1:3615").expect("couldn't send to address");
         println!(" {vec_of_bytes:?}");
-    }
 }
+
 
 
 fn generate_random_number_in_thread(time_in_millis: time::Duration) -> u8{
