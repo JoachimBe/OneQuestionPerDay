@@ -25,15 +25,14 @@ fn main() {
 
         //this shouold be in a var outside the loop (to do)
         let socket = UdpSocket::bind("127.0.0.1:3615").expect("failed to create socket, couldn't bind to address");
-        let mut listen_buffer:[u8;200]= [0;200];
-        
-        
+        let mut listen_buffer:[u8;200]= [0;200]; //buffer of 200 bytes maximum
+
+        //destructuring  response
         let (number_of_bytes, src_addr) = socket.recv_from(&mut listen_buffer).expect("couldn't write on the buffer");
         
         let filled_buffer =&mut listen_buffer[..number_of_bytes];
         println!("{} {:?}", src_addr, filled_buffer);
         
-    
 }
 
 
@@ -46,22 +45,19 @@ fn gen_array() {
         loop{
             vec_of_bytes.push(generate_random_number_in_thread(time_in_millis));
             
-            //event::poll permet d'attendre un evenement sans bloquer le thread 
+            //event::poll permet d'attendre un evenement sans bloquer le thread
+            // ici on attend qu'un évenme
             if event::poll(Duration::from_millis(100)).unwrap() {
                 if let Event::Key(key_event_kind) = event::read().unwrap() {    // si l'event est lu correctement on effectue le block{ }
-                    if key_event_kind.is_release()==true{
-                        continue;
-                    }else{
+                    if key_event_kind.is_press()==true{
                         break;
+                    }else{
+                        continue;
                     }                    
                 }
             }
         };
-        for byte in &vec_of_bytes{
-            print!("{byte} ");
-        }
         sender_socket.send_to(&vec_of_bytes, "127.0.0.1:3615").expect("couldn't send to address");
-        println!(" {vec_of_bytes:?}");
 }
 
 
