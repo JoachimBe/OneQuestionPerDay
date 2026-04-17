@@ -4,34 +4,37 @@ use std::net::UdpSocket;
 //for generating the byte array
 use std::time::Duration;
 use std::{thread, time};
-use std::io;
 use std::sync::{mpsc};
 
-use crossterm::event::{self, Event, KeyCode, KeyEventKind, poll};
+use crossterm::event::{self, Event};
 use rand::RngExt;
 
 fn main() {
-    thread::spawn(||{
-        gen_array();
-    });
+    loop{
 
+        thread::spawn(||{
+            gen_array();
+        });
+        
         listen_udp_port_3615();
+    }
 
 }
 
  fn listen_udp_port_3615(){
 
+        //this shouold be in a var outside the loop (to do)
         let socket = UdpSocket::bind("127.0.0.1:3615").expect("failed to create socket, couldn't bind to address");
         let mut listen_buffer:[u8;200]= [0;200];
-
+        
         
         let (number_of_bytes, src_addr) = socket.recv_from(&mut listen_buffer).expect("couldn't write on the buffer");
         
         let filled_buffer =&mut listen_buffer[..number_of_bytes];
         println!("{} {:?}", src_addr, filled_buffer);
+        
     
 }
-
 
 
 fn gen_array() {
