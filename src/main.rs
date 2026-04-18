@@ -23,7 +23,6 @@ fn main() {
 
  fn listen_udp_port_3615(){
 
-        //this shouold be in a var outside the loop (to do)
         let socket = UdpSocket::bind("127.0.0.1:3615").expect("failed to create socket, couldn't bind to address");
         let mut listen_buffer:[u8;200]= [0;200]; //buffer of 200 bytes maximum
 
@@ -46,7 +45,7 @@ fn gen_array() {
             vec_of_bytes.push(generate_random_number_in_thread(time_in_millis));
             
             //event::poll permet d'attendre un evenement sans bloquer le thread
-            // ici on attend qu'un évenme
+            // ici on attend qu'un évenment key soit pressé 
             if event::poll(Duration::from_millis(100)).unwrap() {
                 if let Event::Key(key_event_kind) = event::read().unwrap() {    // si l'event est lu correctement on effectue le block{ }
                     if key_event_kind.is_press()==true{

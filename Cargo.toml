@@ -2,10 +2,8 @@
 name = "ecoute_en_continu_tableau_byte_udp"
 version = "0.1.0"
 edition = "2024"
+description = "a package that send random number to udp and listen to udp then show the bytes catched"
 
 [dependencies]
-raw-input = "0.0.1-alpha.2"
 rand = "0.10.1"
 crossterm = "0.29.0"
-trpl = "0.3.0"
-smol = "2.0.2"
