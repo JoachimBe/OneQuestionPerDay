@@ -3,6 +3,7 @@ name = "ecoute_en_continu_tableau_byte_udp"
 version = "0.1.0"
 edition = "2024"
 description = "a package that send random number to udp and listen to udp then show the bytes catched"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 rand = "0.10.1"
